@@ -1,4 +1,6 @@
-from utils.consts import ContentConstants
+import uuid
+
+from utils.consts import ContentConsts
 
 
 class ContentUtils:
@@ -33,6 +35,15 @@ class ContentUtils:
         :return:
         """
         updated_content = ""
-        for error, fix in ContentConstants.FIXING_CHARACTERS.items():
+        for error, fix in ContentConsts.FIXING_CHARACTERS.items():
             updated_content = content.replace(error, fix)
         return updated_content
+
+    @staticmethod
+    def generate_product_id() -> str:
+        """
+        Generate product id
+        :return:
+        """
+        product_id = str(uuid.uuid4().int)[:ContentConsts.LENGTH_OF_PRODUCT_ID]
+        return product_id

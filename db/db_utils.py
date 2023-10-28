@@ -1,12 +1,18 @@
 import sqlite3
 
-
-from db.db_consts import DBConsts
+from db.db_consts import DBTable, CommandsFormats
 from objects.book import Book
+from utils.consts import InsertType
+from utils.exceptions import UnknownInsertType
 
 
 class DBUtils:
     __DATABASE_NAME = 'scarlet.db'
+    TABLE_NAME_BY_INSET_TYPE = {
+        InsertType.BOOK.value: DBTable.BOOKS.value,
+        InsertType.BANNER.value: DBTable.BANNERS.value,
+        InsertType.NEWS_LETTER.value: DBTable.NEWS_LETTERS.value
+    }
 
     def __init__(self):
         try:
@@ -20,6 +26,12 @@ class DBUtils:
     def close(self):
         self._db.close()
 
+    def get_table_name_by_insert_type(self, insert_type: str) -> str:
+        try:
+            return self.TABLE_NAME_BY_INSET_TYPE[insert_type]
+        except KeyError:
+            raise UnknownInsertType(msg=f"Unknown insert type: `{insert_type}`")
+
     def is_table_exists(self, table_name: str) -> bool:
         query = f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table_name}'"
         self._cursor.execute(query)
@@ -30,7 +42,7 @@ class DBUtils:
             return False
 
     def create_table(self, table_name: str):
-        self._cursor.execute(f"CREATE TABLE {table_name}{DBConsts.CREATE_TABLE_FORMAT}")
+        self._cursor.execute(f"CREATE TABLE {table_name}{CommandsFormats.CREATE_TABLE_FORMAT[table_name]}")
         self._db.commit()
 
     def insert_data(self, table_name: str, data: dict):
