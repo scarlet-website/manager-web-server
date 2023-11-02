@@ -1,4 +1,5 @@
 import sqlite3
+from typing import List
 
 from db.db_consts import DBTable, CommandsFormats
 from objects.book import Book
@@ -16,7 +17,7 @@ class DBUtils:
 
     def __init__(self):
         try:
-            self._db = sqlite3.connect(self.__DATABASE_NAME)
+            self._db = sqlite3.connect(self.__DATABASE_NAME, check_same_thread=False)
             self._cursor = self._db.cursor()
             self.initialized = True
         except Exception as e:
@@ -42,8 +43,39 @@ class DBUtils:
             return False
 
     def create_table(self, table_name: str):
-        self._cursor.execute(f"CREATE TABLE {table_name}{CommandsFormats.CREATE_TABLE_FORMAT[table_name]}")
-        self._db.commit()
+        if not self.is_table_exists(table_name=table_name):
+            self._cursor.execute(f"CREATE TABLE {table_name}{CommandsFormats.CREATE_TABLE_FORMAT[table_name]}")
+            self._db.commit()
+
+    def get_table_columns(self, table_name: str) -> List[str]:
+        self._cursor.execute(f"PRAGMA table_info({table_name})")
+        columns_names = []
+        columns = self._cursor.fetchall()
+        for column in columns:
+            column_name = column[1]
+            columns_names.append(column_name)
+            print(column_name)
+        return columns_names
+
+    def delete_data_by_filter(self, table_name: str, filter_data: dict):
+        where_conditions = []
+        for column, value in filter_data.items():
+            condition = f"{column} = ?"
+            where_conditions.append(condition)
+
+        if not where_conditions:
+            print("No filter conditions specified. No rows deleted.")
+            return
+
+        where_clause = " AND ".join(where_conditions)
+        query = f"DELETE FROM {table_name} WHERE {where_clause}"
+
+        try:
+            self._cursor.execute(query, tuple(filter_data.values()))
+            self._db.commit()
+            print(f"{self._cursor.rowcount} row(s) deleted.")
+        except sqlite3.Error as e:
+            print(f"Error deleting rows: {e}")
 
     def insert_data(self, table_name: str, data: dict):
         if not self.is_table_exists(table_name=table_name):
@@ -81,26 +113,7 @@ class DBUtils:
         except sqlite3.Error as e:
             print(f"Error retrieving data: {e}")
 
-
-if __name__ == '__main__':
-    db = DBUtils()
-    # db.create_table(table_name="books")
-    # catalog_number = random.randint(1000, 2000)
-    # print(f"catalog_number: {catalog_number}")
-    # example_book = Book(
-    #     CatalogNumber=catalog_number,
-    #     IsDigital=False,
-    #     ImageURL="https://www.aaa",
-    #     Description="asd ASDASD",
-    #     Info="2d12d",
-    #     UnitPrice="5.55555",
-    #     NotRealUnitPrice=234.2342,
-    #     inStock=True,
-    #     isCase=True
-    # )
-    # db.insert_data(table_name="books", data=example_book.model_dump())
-    books = db.get_all_table_data(table_name="books", data_object_type=Book)
-    print(len(books))
-    print(books[1].model_dump())
-    print(db.is_table_exists("books"))
-    print(db.is_table_exists("edges"))
+    def delete_all_table(self, table_name: str):
+        if self.is_table_exists(table_name=table_name):
+            self._cursor.execute(f"DELETE FROM {table_name}")
+            self._db.commit()

@@ -1,19 +1,26 @@
+import base64
+import json
 import os
+
+import requests
 
 from db.db_consts import DBTable
 from db.db_utils import DBUtils
 from objects.book import Book
+from utils.consts import InsertType, ContentConsts
+from utils.content_utils import ContentUtils
 from utils.exceptions import UnknownInsertType
 
 
 class ManagerAPI:
-    _TOKEN = os.getenv(key="TOKEN")
+    _AUTH_TOKEN = os.getenv(key="AUTH_TOKEN")
 
     def __init__(self):
         self.db_utils = DBUtils()
+        self.content_utils = ContentUtils()
 
     def check_authentication_token(self, authentication_token: str) -> bool:
-        return authentication_token == self._TOKEN
+        return authentication_token == self._AUTH_TOKEN
 
     def insert_data(self, insert_type: str, data: dict, image_data=None):
         try:
@@ -25,8 +32,49 @@ class ManagerAPI:
             # FIXME - handle error
             pass
 
-    def get_books(self, convert_books_do_dict: bool = False):
+    def get_books(self):
         books = self.db_utils.get_all_table_data(table_name=DBTable.BOOKS.value, data_object_type=Book)
-        if convert_books_do_dict:
-            books = [book.dict() for book in books]
-        return books
+
+        # Take only wanted books (not orders items)
+        wanted_books = []
+        for book in books:
+            if book.CatalogNumber not in ContentConsts.ORDER_IDS:
+                wanted_books.append(book)
+
+        # Convert books to dict
+        if wanted_books:
+            wanted_books = [book.dict() for book in wanted_books]
+
+        # Fixing html info
+        for book in wanted_books:
+            book['Info'] = self.content_utils.info_text_parser(html_info=book['Info'])
+
+        # Converting bytes data of image to base64 encoding
+        for book in wanted_books:
+            if 'ImageData' in book.keys() and book['ImageData']:
+                book['ImageData'] = base64.b64encode(book['ImageData']).decode('utf-8')
+
+        # Soring books by catalog number
+        wanted_books = sorted(wanted_books, key=lambda x: x['CatalogNumber'])
+
+        return wanted_books
+
+    def reset_books_from_github(self):
+        self.db_utils.delete_all_table(table_name=DBTable.BOOKS.value)
+        self.db_utils.create_table(table_name=DBTable.BOOKS.value)
+        self.db_utils.get_table_columns(table_name=DBTable.BOOKS.value)
+        res = requests.get("https://github.com/scarlet-website/api-data/blob/main/books.json")
+        data = json.loads(res.text)
+        books = json.loads(''.join(data['payload']['blob']['rawLines']).strip())['books']
+
+        for index, book in enumerate(books):
+            if book['ImageURL']:
+                try:
+                    response = requests.get(book['ImageURL'], timeout=15)
+                    if response.status_code == 200:
+                        book['ImageData'] = response.content
+                except Exception as e:
+                    print(f"Error getting image of `{book['ImageURL']}`, except: {str(e)}")
+
+            self.insert_data(insert_type=InsertType.BOOK.value, data=book)
+            print(f"{index + 1}/{len(books)}) Inserted book")

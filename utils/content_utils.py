@@ -5,26 +5,26 @@ from utils.consts import ContentConsts
 
 class ContentUtils:
     @staticmethod
-    def description_html_parser(text_description: str) -> str:
+    def info_html_parser(text_info: str) -> str:
         """
         Parsing description text to html
 
-        :param text_description:
+        :param text_info:
         :return:
         """
-        html_description = text_description.replace('\n', '<br>').replace("\"", "'").strip()
-        return html_description
+        html_info = text_info.replace('\n', '<br>').replace("\"", "'").strip()
+        return html_info
 
     @staticmethod
-    def description_text_parser(html_description: str) -> str:
+    def info_text_parser(html_info: str) -> str:
         """
         Parsing description html to regular text
 
-        :param html_description:
+        :param html_info:
         :return:
         """
-        text_description = html_description.replace('<br>', '\n').replace("'", "\"").strip()
-        return text_description
+        text_info = html_info.replace('<br>', '\n').replace("'", "\"").strip()
+        return text_info
 
     @staticmethod
     def fix_characters(content: str) -> str:

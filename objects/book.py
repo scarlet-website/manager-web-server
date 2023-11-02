@@ -1,3 +1,5 @@
+from typing import Any, Optional
+
 from pydantic import BaseModel
 
 
@@ -8,7 +10,7 @@ class Book(BaseModel):
     Description: str
     Info: str
     UnitPrice: float
-    NotRealUnitPrice: float
+    NotRealUnitPrice: Optional[float]
     inStock: bool
     isCase: bool
-    ImageData = None
+    ImageData: Any = None
