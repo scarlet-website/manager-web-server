@@ -31,6 +31,32 @@ class ManagerAPI:
         except UnknownInsertType as e:
             # FIXME - handle error
             pass
+        except Exception as e:
+            # FIXME - handle error
+            pass
+
+    def update_data(self, insert_type: str, data: dict, image_data=None):
+        try:
+            table_name = self.db_utils.get_table_name_by_insert_type(insert_type=insert_type)
+            if image_data:
+                data.update({"ImageData": image_data})
+            return self.db_utils.update_data(table_name=table_name, data=data)
+        except UnknownInsertType as e:
+            # FIXME - handle error
+            pass
+        except Exception as e:
+            # FIXME - handle error
+            pass
+
+    def delete_data(self, insert_type: str, data: dict):
+        try:
+            table_name = self.db_utils.get_table_name_by_insert_type(insert_type=insert_type)
+            product_id_key = self.db_utils.get_product_id_key_by_insert_type(insert_type=insert_type)
+            filter_data = {product_id_key: data[product_id_key]}
+            return self.db_utils.delete_data_by_filter(table_name=table_name, filter_data=filter_data)
+        except UnknownInsertType as e:
+            # FIXME - handle error
+            pass
 
     def get_books(self):
         books = self.db_utils.get_all_table_data(table_name=DBTable.BOOKS.value, data_object_type=Book)

@@ -1,7 +1,7 @@
 import sqlite3
 from typing import List
 
-from db.db_consts import DBTable, CommandsFormats
+from db.db_consts import DBTable, CommandsFormats, ProductIDKeys
 from objects.book import Book
 from utils.consts import InsertType
 from utils.exceptions import UnknownInsertType
@@ -13,6 +13,10 @@ class DBUtils:
         InsertType.BOOK.value: DBTable.BOOKS.value,
         InsertType.BANNER.value: DBTable.BANNERS.value,
         InsertType.NEWS_LETTER.value: DBTable.NEWS_LETTERS.value
+    }
+
+    PRODUCT_ID_KEY_BY_INSET_TYPE = {
+        InsertType.BOOK.value: ProductIDKeys.BOOKS.value
     }
 
     def __init__(self):
@@ -30,6 +34,12 @@ class DBUtils:
     def get_table_name_by_insert_type(self, insert_type: str) -> str:
         try:
             return self.TABLE_NAME_BY_INSET_TYPE[insert_type]
+        except KeyError:
+            raise UnknownInsertType(msg=f"Unknown insert type: `{insert_type}`")
+
+    def get_product_id_key_by_insert_type(self, insert_type: str) -> str:
+        try:
+            return self.PRODUCT_ID_KEY_BY_INSET_TYPE[insert_type]
         except KeyError:
             raise UnknownInsertType(msg=f"Unknown insert type: `{insert_type}`")
 
@@ -57,7 +67,7 @@ class DBUtils:
             print(column_name)
         return columns_names
 
-    def delete_data_by_filter(self, table_name: str, filter_data: dict):
+    def delete_data_by_filter(self, table_name: str, filter_data: dict) -> bool:
         where_conditions = []
         for column, value in filter_data.items():
             condition = f"{column} = ?"
@@ -65,7 +75,7 @@ class DBUtils:
 
         if not where_conditions:
             print("No filter conditions specified. No rows deleted.")
-            return
+            return False
 
         where_clause = " AND ".join(where_conditions)
         query = f"DELETE FROM {table_name} WHERE {where_clause}"
@@ -74,8 +84,10 @@ class DBUtils:
             self._cursor.execute(query, tuple(filter_data.values()))
             self._db.commit()
             print(f"{self._cursor.rowcount} row(s) deleted.")
+            return True
         except sqlite3.Error as e:
             print(f"Error deleting rows: {e}")
+            return False
 
     def insert_data(self, table_name: str, data: dict):
         if not self.is_table_exists(table_name=table_name):
@@ -95,6 +107,14 @@ class DBUtils:
         except sqlite3.Error as e:
             print(f"Error inserting data: {e}")
             raise e
+
+    def update_data(self, table_name: str, data: dict):
+        try:
+            filter_data = {ProductIDKeys.BOOKS.value: data[ProductIDKeys.BOOKS.value]}
+            self.delete_data_by_filter(table_name=table_name, filter_data=filter_data)
+            self.insert_data(table_name=table_name, data=data)
+        except Exception as e:
+            print(f"Error updating data, {str(e)}")
 
     def get_all_table_data(self, table_name: str, data_object_type):
         object_keys = list(data_object_type.__annotations__.keys())

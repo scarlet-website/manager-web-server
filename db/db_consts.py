@@ -23,3 +23,7 @@ class DBTable(Enum):
     BOOKS = 'books'
     BANNERS = 'banners'
     NEWS_LETTERS = 'news_letters'
+
+
+class ProductIDKeys(Enum):
+    BOOKS = 'CatalogNumber'
