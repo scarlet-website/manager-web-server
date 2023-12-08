@@ -69,6 +69,10 @@ class ManagerAPI:
 
         # Take only wanted books (not orders items)
         wanted_books = []
+
+        if len(books) == 0:
+            return []
+
         for book in books:
             if book.CatalogNumber not in ContentConsts.ORDER_IDS:
                 wanted_books.append(book)
