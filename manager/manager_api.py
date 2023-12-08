@@ -70,7 +70,8 @@ class ManagerAPI:
         # Take only wanted books (not orders items)
         wanted_books = []
 
-        if len(books) == 0:
+        # NO books
+        if books is None:
             return []
 
         for book in books:
