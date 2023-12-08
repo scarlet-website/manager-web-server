@@ -22,11 +22,17 @@ class ManagerAPI:
     def check_authentication_token(self, authentication_token: str) -> bool:
         return authentication_token == self._AUTH_TOKEN
 
-    def insert_data(self, insert_type: str, data: dict, image_data=None):
+    def insert_data(self, insert_type: str, data: dict, image_data=None, parse: bool = False):
         try:
             table_name = self.db_utils.get_table_name_by_insert_type(insert_type=insert_type)
+
             if image_data:
                 data.update({"ImageData": image_data})
+
+            # TODO - Move to utils or other class instead of doing this in manager api
+            if parse and table_name == DBTable.BOOKS.value:
+                data['Info'] = ContentUtils.info_html_parser(data['Info'])
+
             return self.db_utils.insert_data(table_name=table_name, data=data)
         except UnknownInsertType as e:
             # FIXME - handle error
@@ -78,7 +84,7 @@ class ManagerAPI:
         # Converting bytes data of image to base64 encoding
         for book in wanted_books:
             if 'ImageData' in book.keys() and book['ImageData']:
-                book['ImageData'] = base64.b64encode(book['ImageData']).decode('utf-8')
+                book['ImageData'] = "data:image/jpeg;base64," + base64.b64encode(book['ImageData']).decode('utf-8')
 
         # Soring books by catalog number
         wanted_books = sorted(wanted_books, key=lambda x: x['CatalogNumber'])

@@ -5,12 +5,12 @@ from pydantic import BaseModel
 
 class Book(BaseModel):
     CatalogNumber: int
-    IsDigital: bool
-    ImageURL: str
-    Description: str
+    IsDigital: bool = False
+    ImageURL: str = ""
+    Description: str = ""
     Info: str
     UnitPrice: float
     NotRealUnitPrice: Optional[float]
     inStock: bool
-    isCase: bool
+    isCase: bool = False
     ImageData: Any = None

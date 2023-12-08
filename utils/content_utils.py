@@ -12,7 +12,9 @@ class ContentUtils:
         :param text_info:
         :return:
         """
-        html_info = text_info.replace('\n', '<br>').replace("\"", "'").strip()
+        for key, value in ContentConsts.REPLACE_INFO_PARSER_TO_HTML:
+            text_info = text_info.replace(key, value)
+        html_info = text_info.strip()
         return html_info
 
     @staticmethod
@@ -23,7 +25,9 @@ class ContentUtils:
         :param html_info:
         :return:
         """
-        text_info = html_info.replace('<br>', '\n').replace("'", "\"").strip()
+        for key, value in ContentConsts.REPLACE_INFO_PARSER_TO_TEXT.items():
+            html_info = html_info.replace(key, value)
+        text_info = html_info.strip()
         return text_info
 
     @staticmethod
