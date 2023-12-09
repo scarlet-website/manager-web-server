@@ -87,6 +87,7 @@ def get_books():
         print(f"Return books {datetime.now()}")
         return jsonify({'books': books})
     else:
+        manager_api.reset_books_from_github()  # Temporary solution
         print("No books")
         return Response("No books found", status=204, mimetype='application/json')
 
