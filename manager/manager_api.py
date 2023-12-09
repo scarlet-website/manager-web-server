@@ -64,7 +64,7 @@ class ManagerAPI:
             # FIXME - handle error
             pass
 
-    def get_books(self):
+    def get_books(self, no_images: bool = None):
         books = self.db_utils.get_all_table_data(table_name=DBTable.BOOKS.value, data_object_type=Book)
 
         # Take only wanted books (not orders items)
@@ -74,13 +74,19 @@ class ManagerAPI:
         if books is None:
             return []
 
-        for book in books:
-            if book.CatalogNumber not in ContentConsts.ORDER_IDS:
-                wanted_books.append(book)
+        # for book in books:
+        #     # if book.Cat/alogNumber not in ContentConsts.ORDER_IDS:
+        #     wanted_books.append(book)
 
         # Convert books to dict
-        if wanted_books:
-            wanted_books = [book.dict() for book in wanted_books]
+        # if wanted_books:
+        #     wanted_books = [book.dict() for book in books]
+
+        for book in books:
+            dict_book = book.dict()
+            if no_images:
+                dict_book['ImageData'] = None
+            wanted_books.append(dict_book)
 
         # Fixing html info
         for book in wanted_books:
@@ -114,4 +120,4 @@ class ManagerAPI:
                     print(f"Error getting image of `{book['ImageURL']}`, except: {str(e)}")
 
             self.insert_data(insert_type=InsertType.BOOK.value, data=book)
-            print(f"{index + 1}/{len(books)}) Inserted book")
+            print(f"{index + 1}/{len(books)}) Inserted book, book id: {book['CatalogNumber']}")

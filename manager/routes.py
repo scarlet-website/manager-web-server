@@ -1,12 +1,14 @@
 import json
+import os
 from datetime import datetime
-from time import sleep
 
+import requests
 from flask import request, Response, jsonify
 
 from manager import app
 from manager.manager_api import ManagerAPI
 from objects.book import Book
+from objects.delete_request_data import DeleteRequestData
 from objects.update_request_data import UpdateRequestData
 
 manager_api = ManagerAPI()
@@ -35,7 +37,6 @@ def insert():
 @app.route('/update', methods=['POST'])
 def update():
     try:
-
         json_data = json.loads(request.form.get('json_data'))
 
         request_data = UpdateRequestData.model_validate(json_data)
@@ -57,12 +58,33 @@ def update():
         return Response(str(e), status=500, mimetype='application/json')
 
 
+@app.route('/delete', methods=['POST'])
+def delete():
+    try:
+        print("DELETE")
+        json_data = json.loads(request.form.get('json_data'))
+        request_data = DeleteRequestData.model_validate(json_data)
+        authentication_token = request_data.token
+        if not manager_api.check_authentication_token(authentication_token=authentication_token):
+            return Response(f"Wrong token `{authentication_token}`", status=401, mimetype='application/json')
+
+        insert_type: str = request_data.insert_type
+        item_id: str = request_data.item_id
+
+        manager_api.delete_data(insert_type=insert_type, data={"CatalogNumber": item_id})
+        return Response(f"{insert_type} deleted successfully", status=201, mimetype='application/json')
+    except Exception as e:
+        print(f"Error updating data, {str(e)}")
+        return Response(str(e), status=500, mimetype='application/json')
+
+
 @app.route('/get_books')
 def get_books():
-    books = manager_api.get_books()
+    no_images = bool(request.args.get('no_images'))
+    print(f"no_images: {no_images}")
+    books = manager_api.get_books(no_images)
     if books:
         print(f"Return books {datetime.now()}")
-        sleep(1)
         return jsonify({'books': books})
     else:
         print("No books")
@@ -83,3 +105,67 @@ def reset_books_from_github():
     except Exception as e:
         print(e)
         return Response(str(e), status=500, mimetype='application/json')
+
+
+@app.route('/purchase', methods=['POST'])
+def purchase():
+    try:
+        rivhit_url = "https://icredit.rivhit.co.il/API/PaymentPageRequest.svc"
+        redirect_url = "https://www.scarlet-publishing.com/pages/order_confirm.php"
+        group_private_token = os.getenv(key="group_private_token")
+
+        items = request.json.get('Items')
+        details = request.json.get('details')
+        books = manager_api.get_books(no_images=True)
+
+        if not items or len(items) == 0 or not books:
+            print('No books to purchase')
+            return Response('No books to purchase', status=400, mimetype='application/json')
+
+        purchased_items = []
+        bad_request = False
+        purchased_item = dict()
+
+        for book in items:
+            api_book = next((b for b in books if str(b['CatalogNumber']) == str(book['CatalogNumber'])), None)
+            if not api_book:
+                print(f"Book with CatalogNumber {book['CatalogNumber']} not found")
+                bad_request = True
+                break  # Move the break statement here
+
+            api_book.pop("ImageData")
+
+            purchased_item = {
+                **api_book,
+                'Quantity': book['Quantity'],
+            }
+            purchased_items.append(purchased_item)
+
+        print(f"purchased_items: {purchased_items}")
+
+        if bad_request:
+            return Response(f"Book not found", status=400, mimetype='application/json')
+
+        rivhit_json = {
+            'GroupPrivateToken': group_private_token,
+            'RedirectURL': redirect_url,
+            'ExemptVAT': False,
+            'MaxPayments': 12,
+            'Items': purchased_items,
+            **details,
+        }
+
+        print(f"rivhit_json: {rivhit_json}")
+
+        rivhit_response = requests.post(
+            f"{rivhit_url}/GetUrl",
+            json=rivhit_json
+        )
+        print(f"headers: ", {rivhit_response.headers})
+        response_url = rivhit_response.headers
+        print(f"response_url: {response_url}")
+        return jsonify({'iframe_url': response_url}), 200
+
+    except Exception as e:
+        print(f"Error: {e}")
+        return Response('Internal Server Error', status=500, mimetype='application/json')
