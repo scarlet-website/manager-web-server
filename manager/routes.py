@@ -73,7 +73,7 @@ def get_books():
 def reset_books_from_github():
     if 'token' not in request.args.keys():
         return Response(f"No token given", status=401, mimetype='application/json')
-    authentication_token = str(json.loads(request.args['token']))
+    authentication_token = request.args['token']
     if not manager_api.check_authentication_token(authentication_token=authentication_token):
         return Response(f"Wrong token `{authentication_token}`", status=401, mimetype='application/json')
 

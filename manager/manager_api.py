@@ -70,7 +70,7 @@ class ManagerAPI:
         # Take only wanted books (not orders items)
         wanted_books = []
 
-        # NO books
+        # No books
         if books is None:
             return []
 
