@@ -1,3 +1,4 @@
+import os
 from enum import Enum
 
 
@@ -21,3 +22,12 @@ class InsertType(Enum):
     BOOK = 'book'
     BANNER = 'banner'
     NEWS_LETTER = 'news_letter'
+
+
+class DomainConsts:
+    DOMAIN = "https://www.scarlet-publishing.com"
+    DOMAIN_API = f"{DOMAIN}/api"
+
+
+class ServerConsts:
+    IMAGES_PATH = os.getenv(key="IMAGES_PATH")

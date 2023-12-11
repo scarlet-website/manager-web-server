@@ -1,8 +1,8 @@
+import json
 import sqlite3
 from typing import List
 
 from db.db_consts import DBTable, CommandsFormats, ProductIDKeys
-from objects.book import Book
 from utils.consts import InsertType
 from utils.exceptions import UnknownInsertType
 
@@ -108,13 +108,13 @@ class DBUtils:
             print(f"Error inserting data: {e}")
             raise e
 
-    def update_data(self, table_name: str, data: dict):
-        try:
-            filter_data = {ProductIDKeys.BOOKS.value: data[ProductIDKeys.BOOKS.value]}
-            self.delete_data_by_filter(table_name=table_name, filter_data=filter_data)
-            self.insert_data(table_name=table_name, data=data)
-        except Exception as e:
-            print(f"Error updating data, {str(e)}")
+    # def update_data(self, table_name: str, data: dict):
+    #     try:
+    #         filter_data = {ProductIDKeys.BOOKS.value: data[ProductIDKeys.BOOKS.value]}
+    #         self.delete_data_by_filter(table_name=table_name, filter_data=filter_data)
+    #         self.insert_data(table_name=table_name, data=data)
+    #     except Exception as e:
+    #         print(f"Error updating data, {str(e)}")
 
     def get_all_table_data(self, table_name: str, data_object_type):
         object_keys = list(data_object_type.__annotations__.keys())
@@ -137,3 +137,24 @@ class DBUtils:
         if self.is_table_exists(table_name=table_name):
             self._cursor.execute(f"DELETE FROM {table_name}")
             self._db.commit()
+
+    def export_table_to_json(self, table_name, json_file_path):
+        query = f"SELECT * FROM {table_name}"
+
+        try:
+            self._cursor.execute(query)
+            rows = self._cursor.fetchall()
+
+            columns = [description[0] for description in self._cursor.description]
+
+            data = []
+            for row in rows:
+                row_dict = dict(zip(columns, row))
+                data.append(row_dict)
+
+            with open(json_file_path, 'w') as json_file:
+                json.dump(data, json_file, indent=2)
+
+            print(f"Data from '{table_name}' exported to '{json_file_path}' successfully.")
+        except sqlite3.Error as e:
+            print(f"Error exporting data: {e}")

@@ -3,13 +3,14 @@ import os
 from datetime import datetime
 
 import requests
-from flask import request, Response, jsonify
+from flask import request, Response, jsonify, send_from_directory
 
 from manager import app
 from manager.manager_api import ManagerAPI
 from objects.book import Book
 from objects.delete_request_data import DeleteRequestData
 from objects.update_request_data import UpdateRequestData
+from utils.consts import ServerConsts
 
 manager_api = ManagerAPI()
 
@@ -80,9 +81,7 @@ def delete():
 
 @app.route('/get_books')
 def get_books():
-    no_images = bool(request.args.get('no_images'))
-    print(f"no_images: {no_images}")
-    books = manager_api.get_books(no_images)
+    books = manager_api.get_books()
     if books:
         print(f"Return books {datetime.now()}")
         return jsonify({'books': books})
@@ -90,6 +89,16 @@ def get_books():
         manager_api.reset_books_from_github()  # Temporary solution
         print("No books")
         return Response("No books found", status=204, mimetype='application/json')
+
+
+@app.route('/get_image/<filename>')
+def get_book_image(filename):
+    try:
+        print(f"Getting image file name: `{filename}`...")
+        # return send_from_directory("", filename)
+        return send_from_directory(ServerConsts.IMAGES_PATH, filename)
+    except Exception as e:
+        print(f"Error get image `{filename}`, except: {str(e)}")
 
 
 @app.route('/reset_books_from_github')
@@ -117,7 +126,7 @@ def purchase():
 
         items = request.json.get('Items')
         details = request.json.get('details')
-        books = manager_api.get_books(no_images=True)
+        books = manager_api.get_books()
 
         if not items or len(items) == 0 or not books:
             print('No books to purchase')

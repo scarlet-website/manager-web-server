@@ -13,4 +13,3 @@ class Book(BaseModel):
     NotRealUnitPrice: Optional[float]
     inStock: bool
     isCase: bool = False
-    ImageData: Any = None
