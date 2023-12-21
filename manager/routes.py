@@ -11,6 +11,7 @@ from objects.book import Book
 from objects.delete_request_data import DeleteRequestData
 from objects.update_request_data import UpdateRequestData
 from utils.consts import ServerConsts
+from utils.exceptions import NotValidEmailAddressException
 
 manager_api = ManagerAPI()
 
@@ -81,7 +82,8 @@ def delete():
 
 @app.route('/get_books')
 def get_books():
-    books = manager_api.get_books()
+    parse_info = request.args.get("parse_info")
+    books = manager_api.get_books(parse_info)
     if books:
         print(f"Return books {datetime.now()}")
         return jsonify({'books': books})
@@ -115,6 +117,40 @@ def reset_books_from_github():
     except Exception as e:
         print(e)
         return Response(str(e), status=500, mimetype='application/json')
+
+
+@app.route('/add_email_to_newsletter', methods=['POST'])
+def add_email_to_newsletter():
+    try:
+        email = request.args.get("email")
+        manager_api.add_email_to_newsletter(email=email)
+        return Response(f"Added newsletter, email: `{email}`", status=200, mimetype='application/json')
+    except NotValidEmailAddressException:
+        error_desc = 'Invalid email address'
+        print(error_desc)
+        return Response(error_desc, status=400, mimetype='application/json')
+    except Exception as e:
+        error_desc = f'Internal Server Error, except: {str(e)}'
+        print(error_desc)
+        return Response(error_desc, status=500, mimetype='application/json')
+
+
+@app.route('/get_newsletter_emails', methods=['POST'])
+def get_newsletter_emails():
+    if 'token' not in request.args.keys():
+        return Response(f"No token given", status=401, mimetype='application/json')
+    authentication_token = request.args['token']
+    if not manager_api.check_authentication_token(authentication_token=authentication_token):
+        return Response(f"Wrong token `{authentication_token}`", status=401, mimetype='application/json')
+
+    try:
+        news_letters = manager_api.get_newsletters_emails()
+        print(f"Return news_letters {datetime.now()}")
+        return jsonify({'news_letters': news_letters})
+    except Exception as e:
+        error_desc = f'Internal Server Error, except: {str(e)}'
+        print(error_desc)
+        return Response(error_desc, status=500, mimetype='application/json')
 
 
 @app.route('/purchase', methods=['POST'])

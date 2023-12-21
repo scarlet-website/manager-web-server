@@ -3,6 +3,7 @@ import os
 import uuid
 
 from utils.consts import ContentConsts, ServerConsts
+from utils.exceptions import NotValidEmailAddressException
 
 
 class ContentUtils:
@@ -14,7 +15,7 @@ class ContentUtils:
         :param text_info:
         :return:
         """
-        for key, value in ContentConsts.REPLACE_INFO_PARSER_TO_HTML:
+        for key, value in ContentConsts.REPLACE_INFO_PARSER_TO_HTML.items():
             text_info = text_info.replace(key, value)
         html_info = text_info.strip()
         return html_info
@@ -85,3 +86,14 @@ class ContentUtils:
                 print(f"Image file {file_path} doesn't exist")
         except Exception as e:
             print(f"Error deleting image `{file_path}`, except: {str(e)}")
+
+    @staticmethod
+    def check_valid_email_address(email: str):
+        try:
+            name, domain = email.split("@")
+            if not name or not domain:
+                raise NotValidEmailAddressException
+        except Exception as e:
+            desc = f"Not valid email address: `{email}`"
+            print(f"desc, except: {str(e)}")
+            raise NotValidEmailAddressException(desc)

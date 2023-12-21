@@ -14,7 +14,7 @@ class CommandsFormats:
             ''',
         'news_letters':
             f'''
-            
+            (EmailAddress TEXT KEY)
             '''
     }
 

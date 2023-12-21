@@ -1,11 +1,14 @@
 import json
 import os
+from datetime import datetime
+from typing import List
 
 import requests
 
 from db.db_consts import DBTable, ProductIDKeys
 from db.db_utils import DBUtils
 from objects.book import Book
+from objects.news_letter import NewsLetter
 from utils.consts import InsertType
 from utils.content_utils import ContentUtils
 from utils.exceptions import UnknownInsertType
@@ -80,7 +83,7 @@ class ManagerAPI:
             # FIXME - handle error
             pass
 
-    def get_books(self):
+    def get_books(self, parse_info: bool = None):
         books = self.db_utils.get_all_table_data(table_name=DBTable.BOOKS.value, data_object_type=Book)
 
         # No books
@@ -92,7 +95,8 @@ class ManagerAPI:
 
         # Fixing html info
         for book in wanted_books:
-            book['Info'] = self.content_utils.info_text_parser(html_info=book['Info'])
+            if parse_info:
+                book['Info'] = self.content_utils.info_html_parser(text_info=book['Info'])
 
         # Soring books by catalog number
         wanted_books = sorted(wanted_books, key=lambda x: x['CatalogNumber'])
@@ -120,3 +124,19 @@ class ManagerAPI:
 
             self.insert_data(insert_type=InsertType.BOOK.value, data=book, image_data=image_data)
             print(f"{index + 1}/{len(books)}) Inserted book, book id: {book['CatalogNumber']}")
+
+    def add_email_to_newsletter(self, email: str):
+        self.content_utils.check_valid_email_address(email=email)
+        newsletter_object = NewsLetter(EmailAddress=email)
+        self.db_utils.insert_data(table_name=DBTable.NEWS_LETTERS.value, data=newsletter_object.model_dump())
+
+    def get_newsletters_emails(self):
+        emails_objects: List[NewsLetter] = self.db_utils.get_all_table_data(
+            table_name=DBTable.NEWS_LETTERS.value, data_object_type=NewsLetter
+        )
+
+        if not emails_objects:
+            return []
+
+        emails: List[str] = [email.EmailAddress for email in emails_objects]
+        return emails
