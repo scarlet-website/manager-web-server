@@ -128,7 +128,12 @@ class ManagerAPI:
     def add_email_to_newsletter(self, email: str):
         self.content_utils.check_valid_email_address(email=email)
         newsletter_object = NewsLetter(EmailAddress=email)
-        self.db_utils.insert_data(table_name=DBTable.NEWS_LETTERS.value, data=newsletter_object.model_dump())
+        email_exists = self.db_utils.exists(table_name=DBTable.NEWS_LETTERS.value, data_filter={"EmailAddress": email})
+        if email_exists:
+            print(f"Email `{email}` already exists")
+        else:
+            self.db_utils.insert_data(table_name=DBTable.NEWS_LETTERS.value, data=newsletter_object.model_dump())
+            print(f"Inserted new newsletter email: `{email}`")
 
     def get_newsletters_emails(self):
         emails_objects: List[NewsLetter] = self.db_utils.get_all_table_data(

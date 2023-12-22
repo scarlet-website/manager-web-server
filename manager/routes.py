@@ -122,9 +122,10 @@ def reset_books_from_github():
 @app.route('/add_email_to_newsletter', methods=['POST'])
 def add_email_to_newsletter():
     try:
-        email = request.args.get("email")
+        json_data = json.loads(request.data)
+        email = json_data.get("email")
         manager_api.add_email_to_newsletter(email=email)
-        return Response(f"Added newsletter, email: `{email}`", status=200, mimetype='application/json')
+        return jsonify(json_data), 200
     except NotValidEmailAddressException:
         error_desc = 'Invalid email address'
         print(error_desc)
@@ -137,9 +138,10 @@ def add_email_to_newsletter():
 
 @app.route('/get_newsletter_emails', methods=['POST'])
 def get_newsletter_emails():
-    if 'token' not in request.args.keys():
+    json_data = json.loads(request.data)
+    if 'token' not in json_data.keys():
         return Response(f"No token given", status=401, mimetype='application/json')
-    authentication_token = request.args['token']
+    authentication_token = json_data.get('token')
     if not manager_api.check_authentication_token(authentication_token=authentication_token):
         return Response(f"Wrong token `{authentication_token}`", status=401, mimetype='application/json')
 

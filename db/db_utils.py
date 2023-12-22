@@ -3,6 +3,7 @@ import sqlite3
 from typing import List
 
 from db.db_consts import DBTable, CommandsFormats, ProductIDKeys
+from objects.news_letter import NewsLetter
 from utils.consts import InsertType
 from utils.exceptions import UnknownInsertType
 
@@ -158,3 +159,30 @@ class DBUtils:
             print(f"Data from '{table_name}' exported to '{json_file_path}' successfully.")
         except sqlite3.Error as e:
             print(f"Error exporting data: {e}")
+
+    @staticmethod
+    def _base_model_object_valid_by_data_filter(data_filter: dict, base_model_object) -> bool:
+        """
+        Given a base model pydantic object and a data_filter
+        if each key value exists also in the object - return true, else - falses
+        :param data_filter:
+        :param base_model_object:
+        :return:
+        """
+        try:
+            for key, value in data_filter.items():
+                if base_model_object.model_dump()[key] != value:
+                    return False
+            return True
+        except (KeyError, ValueError):
+            return False
+        except Exception as e:
+            print(f"Cannot check if base model object is valid by data filter, except: {str(e)}")
+            return False
+
+    def exists(self, table_name, data_filter: dict) -> bool:
+        data = self.get_all_table_data(table_name=table_name, data_object_type=NewsLetter)
+        for data_obj in data:
+            if self._base_model_object_valid_by_data_filter(data_filter=data_filter, base_model_object=data_obj):
+                return True
+        return False
