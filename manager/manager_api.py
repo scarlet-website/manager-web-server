@@ -7,6 +7,7 @@ import requests
 
 from db.db_consts import DBTable, ProductIDKeys
 from db.db_utils import DBUtils
+from objects.banner import Banner
 from objects.book import Book
 from objects.news_letter import NewsLetter
 from utils.consts import InsertType
@@ -24,12 +25,16 @@ class ManagerAPI:
     def check_authentication_token(self, authentication_token: str) -> bool:
         return authentication_token == self._AUTH_TOKEN
 
+    def get_product_id_key_by_insert_type(self, insert_type: str):
+        return self.db_utils.get_product_id_key_by_insert_type(insert_type=insert_type)
+
     def extract_item_id(self, data: dict, insert_type: str) -> str:
         item_id = data[self.db_utils.get_product_id_key_by_insert_type(insert_type=insert_type)]
         return item_id
 
     def insert_data(self, insert_type: str, data: dict, image_data=None, parse: bool = False):
         try:
+            print(f"Data to insert: `{data}`")
             table_name = self.db_utils.get_table_name_by_insert_type(insert_type=insert_type)
 
             if image_data:
@@ -145,3 +150,18 @@ class ManagerAPI:
 
         emails: List[str] = [email.EmailAddress for email in emails_objects]
         return emails
+
+    def get_banners(self):
+        banners = self.db_utils.get_all_table_data(table_name=DBTable.BANNERS.value, data_object_type=Banner)
+
+        # No banners
+        if banners is None:
+            return []
+
+        # Convert to dict
+        wanted_banners = [banner.dict() for banner in banners]
+
+        # Soring banners by catalog number
+        wanted_banners = sorted(wanted_banners, key=lambda x: x['banner_id'])
+
+        return wanted_banners

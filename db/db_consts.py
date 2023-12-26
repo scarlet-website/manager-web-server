@@ -10,7 +10,7 @@ class CommandsFormats:
             ''',
         'banners':
             f'''
-            
+            (banner_id INTEGER KEY, ImageURL TEXT)
             ''',
         'news_letters':
             f'''
@@ -27,3 +27,4 @@ class DBTable(Enum):
 
 class ProductIDKeys(Enum):
     BOOKS = 'CatalogNumber'
+    BANNERS = 'banner_id'

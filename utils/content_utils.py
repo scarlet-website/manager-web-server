@@ -65,6 +65,7 @@ class ContentUtils:
             path = os.path.join(ServerConsts.IMAGES_PATH, file_name)
             with open(path, "wb") as f:
                 f.write(base64.b64decode(image_data.split(',')[1]))
+                print(f"Saved image at {path}")
             return path
         except Exception as e:
             print(f"Error saving image: `{file_name}`, except: {str(e)}")

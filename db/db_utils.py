@@ -17,7 +17,8 @@ class DBUtils:
     }
 
     PRODUCT_ID_KEY_BY_INSET_TYPE = {
-        InsertType.BOOK.value: ProductIDKeys.BOOKS.value
+        InsertType.BOOK.value: ProductIDKeys.BOOKS.value,
+        InsertType.BANNER.value: ProductIDKeys.BANNERS.value
     }
 
     def __init__(self):

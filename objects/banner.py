@@ -2,5 +2,5 @@ from pydantic import BaseModel
 
 
 class Banner(BaseModel):
-    CatalogNumber: str
-    EncodedData: str
+    banner_id: int
+    ImageURL: str = ""
