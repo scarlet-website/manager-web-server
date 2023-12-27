@@ -69,6 +69,7 @@ class ContentUtils:
             return path
         except Exception as e:
             print(f"Error saving image: `{file_name}`, except: {str(e)}")
+            raise e
 
     @staticmethod
     def get_image_file_name(insert_type: str, item_id: str) -> str:
