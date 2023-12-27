@@ -104,19 +104,11 @@ class DBUtils:
         try:
             self._cursor.execute(query, values)
             self._db.commit()
-            print("Data inserted successfully.")
+            print(f"Data inserted successfully, data: {data}")
             return data
         except sqlite3.Error as e:
             print(f"Error inserting data: {e}")
             raise e
-
-    # def update_data(self, table_name: str, data: dict):
-    #     try:
-    #         filter_data = {ProductIDKeys.BOOKS.value: data[ProductIDKeys.BOOKS.value]}
-    #         self.delete_data_by_filter(table_name=table_name, filter_data=filter_data)
-    #         self.insert_data(table_name=table_name, data=data)
-    #     except Exception as e:
-    #         print(f"Error updating data, {str(e)}")
 
     def get_all_table_data(self, table_name: str, data_object_type):
         object_keys = list(data_object_type.__annotations__.keys())

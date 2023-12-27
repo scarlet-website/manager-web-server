@@ -49,11 +49,12 @@ class ManagerAPI:
 
             return self.db_utils.insert_data(table_name=table_name, data=data)
         except UnknownInsertType as e:
-            # FIXME - handle error
-            pass
+            desc = f"Error: Unknown insert type `{insert_type}`, except: {str(e)}"
+            print(desc)
+            raise UnknownInsertType(desc)
         except Exception as e:
-            # FIXME - handle error
-            pass
+            print(f"Error inserting data")
+            raise e
 
     def update_data(self, insert_type: str, data: dict, image_data=None):
         try:
@@ -66,11 +67,12 @@ class ManagerAPI:
             return self.insert_data(insert_type=insert_type, data=data, image_data=image_data)
             # return self.db_utils.update_data(table_name=table_name, data=data)
         except UnknownInsertType as e:
-            # FIXME - handle error
-            pass
+            desc = f"Error: Unknown insert type `{insert_type}`, except: {str(e)}"
+            print(desc)
+            raise UnknownInsertType(desc)
         except Exception as e:
-            # FIXME - handle error
-            pass
+            print(f"Error updating data")
+            raise e
 
     def delete_data(self, insert_type: str, data: dict):
         try:
