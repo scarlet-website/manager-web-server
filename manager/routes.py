@@ -42,6 +42,7 @@ def update():
         json_data = json.loads(request.form.get('json_data'))
 
         request_data = UpdateRequestData.model_validate(json_data)
+        print(f"Update route, insert_type: {request_data.insert_type}, data: {request_data.data.model_dump()}")
         authentication_token = request_data.token
         if not manager_api.check_authentication_token(authentication_token=authentication_token):
             return Response(f"Wrong token `{authentication_token}`", status=401, mimetype='application/json')
