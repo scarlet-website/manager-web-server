@@ -1,7 +1,6 @@
 import json
 from datetime import datetime
 from typing import Union
-from urllib.parse import unquote
 
 from flask import request, Response, jsonify, send_from_directory
 
@@ -11,6 +10,7 @@ from objects.book import Book
 from objects.delete_request_data import DeleteRequestData
 from objects.update_request_data import UpdateRequestData
 from utils.consts import ServerConsts
+from utils.content_utils import ContentUtils
 from utils.exceptions import NotValidEmailAddressException
 
 manager_api = ManagerAPI()
@@ -43,7 +43,7 @@ def update():
     print("Start update route")
     insert_type = data = None
     try:
-        json_data = json.loads(request.form.get('json_data'))
+        json_data = json.loads(request.form.get('json_data'), object_hook=ContentUtils().ascii_encode_dict)
         print(f"json_data: {json_data}")
         request_data = UpdateRequestData.model_validate(json_data)
         print(f"Update route, insert_type: {request_data.insert_type}, data: {request_data.data.model_dump()}")

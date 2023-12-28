@@ -100,3 +100,8 @@ class ContentUtils:
             desc = f"Not valid email address: `{email}`"
             print(f"desc, except: {str(e)}")
             raise NotValidEmailAddressException(desc)
+
+    @staticmethod
+    def ascii_encode_dict(data):
+        ascii_encode = lambda x: x.encode('ascii') if type(x) == "str" else x
+        return dict(map(ascii_encode, pair) for pair in data.items())
