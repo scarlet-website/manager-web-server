@@ -57,6 +57,7 @@ class ContentUtils:
 
     @staticmethod
     def add_image(image_data: bytes, file_name: str):
+        print("Start content_utils add_image")
         try:
             image_data = "data:image/jpeg;base64," + base64.b64encode(image_data).decode('utf-8')
             if not os.path.exists(ServerConsts.IMAGES_PATH):

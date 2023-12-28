@@ -37,6 +37,7 @@ class ManagerAPI:
         return item_id
 
     def insert_data(self, insert_type: str, data: dict, image_data=None, parse: bool = False):
+        print(f"Start manager_api insert_data")
         try:
             print(f"Data to insert: `{data}`")
             table_name = self.db_utils.get_table_name_by_insert_type(insert_type=insert_type)
@@ -61,6 +62,7 @@ class ManagerAPI:
             raise e
 
     def update_data(self, insert_type: str, data: dict, image_data=None):
+        print(f"Start manager_api update_data")
         try:
             table_name = self.db_utils.get_table_name_by_insert_type(insert_type=insert_type)
             if image_data:

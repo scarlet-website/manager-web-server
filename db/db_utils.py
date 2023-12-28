@@ -92,6 +92,7 @@ class DBUtils:
             return False
 
     def insert_data(self, table_name: str, data: dict):
+        print("Start db_utils insert_data")
         if not self.is_table_exists(table_name=table_name):
             self.create_table(table_name=table_name)
 
