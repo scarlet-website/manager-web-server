@@ -44,8 +44,7 @@ def update():
     try:
         encoded_json_data = request.form.get('json_data')
         decoded_json_data = unquote(encoded_json_data)
-        json_data = json.loads(decoded_json_data)
-
+        json_data = json.loads(decoded_json_data, encoding='utf-8')
         request_data = UpdateRequestData.model_validate(json_data)
         print(f"Update route, insert_type: {request_data.insert_type}, data: {request_data.data.model_dump()}")
         authentication_token = request_data.token
@@ -63,7 +62,7 @@ def update():
         return Response(f"{insert_type} updated successfully", status=201, mimetype='application/json')
     except Exception as e:
         desc = (f"Error: Updating route: {str(e)}, insert_type: {insert_type}, type(insert_type): {type(insert_type)}, "
-                f"data: {data.model_dump() if data else ''}")
+                f"data: {data.model_dump() if data else None}")
         print(desc)
         return Response(desc, status=500, mimetype='application/json')
 
