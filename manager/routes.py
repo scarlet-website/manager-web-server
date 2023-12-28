@@ -40,11 +40,11 @@ def insert():
 
 @app.route('/update', methods=['POST'])
 def update():
+    print("Start update route")
     insert_type = data = None
     try:
-        encoded_json_data = request.form.get('json_data')
-        decoded_json_data = unquote(encoded_json_data)
-        json_data = json.loads(decoded_json_data, encoding='utf-8')
+        json_data = json.loads(request.form.get('json_data'))
+        print(f"json_data: {json_data}")
         request_data = UpdateRequestData.model_validate(json_data)
         print(f"Update route, insert_type: {request_data.insert_type}, data: {request_data.data.model_dump()}")
         authentication_token = request_data.token
