@@ -64,8 +64,8 @@ def update():
     except Exception as e:
         desc = (f"Error: Updating route: {str(e)}, insert_type: {insert_type}, type(insert_type): {type(insert_type)}, "
                 f"data: {data.model_dump()}")
-        print(f"Error updating data, {str(e)}")
-        return Response(str(e), status=500, mimetype='application/json')
+        print(desc)
+        return Response(desc, status=500, mimetype='application/json')
 
 
 @app.route('/delete', methods=['POST'])
