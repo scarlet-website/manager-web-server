@@ -46,7 +46,9 @@ class ManagerAPI:
                 item_id = self.extract_item_id(data=data, insert_type=insert_type)
                 file_name = self.content_utils.get_image_file_name(insert_type=insert_type, item_id=item_id)
                 data.update({"ImageURL": file_name})
+                print(f"Adding image `{file_name}`")
                 self.content_utils.add_image(image_data=image_data, file_name=file_name)
+                print(f"Done adding image `{file_name}`")
 
             # TODO - Move to utils or other class instead of doing this in manager api
             if parse and table_name == DBTable.BOOKS.value:
