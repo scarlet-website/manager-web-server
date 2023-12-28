@@ -1,5 +1,6 @@
 import json
 from datetime import datetime
+from urllib.parse import unquote
 
 from flask import request, Response, jsonify, send_from_directory
 
@@ -39,7 +40,9 @@ def insert():
 @app.route('/update', methods=['POST'])
 def update():
     try:
-        json_data = json.loads(request.form.get('json_data'))
+        encoded_json_data = request.form.get('json_data')
+        decoded_json_data = unquote(encoded_json_data)
+        json_data = json.loads(decoded_json_data)
 
         request_data = UpdateRequestData.model_validate(json_data)
         print(f"Update route, insert_type: {request_data.insert_type}, data: {request_data.data.model_dump()}")
@@ -77,7 +80,7 @@ def delete():
         manager_api.delete_data(insert_type=insert_type, data={product_id_key: item_id})
         return Response(f"{insert_type} deleted successfully", status=201, mimetype='application/json')
     except Exception as e:
-        print(f"Error updating data, {str(e)}")
+        print(f"Error delete data, {str(e)}")
         return Response(str(e), status=500, mimetype='application/json')
 
 
