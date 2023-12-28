@@ -111,6 +111,8 @@ class DBUtils:
             raise e
 
     def get_all_table_data(self, table_name: str, data_object_type):
+        print(f"data_object_type: {data_object_type.__name__}")
+        print(f"Initialized: {self.initialized}")
         object_keys = list(data_object_type.__annotations__.keys())
         query = f"SELECT * FROM {table_name}"
         try:
@@ -121,11 +123,20 @@ class DBUtils:
                 data_dict = dict()
                 for key, value in zip(object_keys, row):
                     data_dict[key] = value
-                obj = data_object_type.model_validate(data_dict)
-                data.append(obj)
-            return data
+                data.append(data_dict)
+
+            data_objects = []
+            for index, data_dict_entry in enumerate(data):
+                obj = data_object_type.model_validate(data_dict_entry)
+                data_objects.append(obj)
+
+            return data_objects
         except sqlite3.Error as e:
-            print(f"Error retrieving data: {e}")
+            print(f"(get_all_table_data) Error retrieving data: {e}")
+            raise e
+        except Exception as e:
+            print(f"Error while trying to get_all_table_data, except: {str(e)}")
+            raise e
 
     def delete_all_table(self, table_name: str):
         if self.is_table_exists(table_name=table_name):

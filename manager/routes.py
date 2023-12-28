@@ -46,7 +46,7 @@ def update():
         if not manager_api.check_authentication_token(authentication_token=authentication_token):
             return Response(f"Wrong token `{authentication_token}`", status=401, mimetype='application/json')
 
-        insert_type: str = request_data.insert_type
+        insert_type = request_data.insert_type
         data: Book = request_data.data
 
         image_data = None
@@ -88,9 +88,9 @@ def get_books():
         print(f"Return books {datetime.now()}")
         return jsonify({'books': books})
     else:
-        manager_api.reset_books_from_github()  # Temporary solution
-        print("No books")
-        return Response("No books found", status=204, mimetype='application/json')
+        desc = "No books found"
+        print(desc)
+        return Response(desc, status=204, mimetype='application/json')
 
 
 @app.route('/get_banners')
@@ -100,8 +100,9 @@ def get_banners():
         print(f"Return banners {datetime.now()}")
         return jsonify({'banners': banners})
     else:
-        print("No banners")
-        return Response("No books found", status=204, mimetype='application/json')
+        desc = "No banners found"
+        print(desc)
+        return Response(desc, status=204, mimetype='application/json')
 
 
 @app.route('/get_image/<filename>')

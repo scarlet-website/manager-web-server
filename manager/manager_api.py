@@ -22,6 +22,10 @@ class ManagerAPI:
         self.db_utils = DBUtils()
         self.content_utils = ContentUtils()
 
+    def set_db_utils_connection_if_needed(self):
+        if self.db_utils.initialized:
+            self.db_utils = DBUtils()
+
     def check_authentication_token(self, authentication_token: str) -> bool:
         return authentication_token == self._AUTH_TOKEN
 
@@ -91,6 +95,7 @@ class ManagerAPI:
             pass
 
     def get_books(self, parse_info: bool = None):
+        self.set_db_utils_connection_if_needed()
         books = self.db_utils.get_all_table_data(table_name=DBTable.BOOKS.value, data_object_type=Book)
 
         # No books
@@ -133,6 +138,7 @@ class ManagerAPI:
             print(f"{index + 1}/{len(books)}) Inserted book, book id: {book['CatalogNumber']}")
 
     def add_email_to_newsletter(self, email: str):
+        self.set_db_utils_connection_if_needed()
         self.content_utils.check_valid_email_address(email=email)
         newsletter_object = NewsLetter(EmailAddress=email)
         email_exists = self.db_utils.exists(table_name=DBTable.NEWS_LETTERS.value, data_filter={"EmailAddress": email})
@@ -154,6 +160,7 @@ class ManagerAPI:
         return emails
 
     def get_banners(self):
+        self.set_db_utils_connection_if_needed()
         banners = self.db_utils.get_all_table_data(table_name=DBTable.BANNERS.value, data_object_type=Banner)
 
         # No banners
