@@ -1,5 +1,6 @@
 import json
 from datetime import datetime
+from typing import Union
 from urllib.parse import unquote
 
 from flask import request, Response, jsonify, send_from_directory
@@ -39,8 +40,7 @@ def insert():
 
 @app.route('/update', methods=['POST'])
 def update():
-    insert_type = None
-    data = Book()
+    insert_type = data = None
     try:
         encoded_json_data = request.form.get('json_data')
         decoded_json_data = unquote(encoded_json_data)
@@ -53,7 +53,7 @@ def update():
             return Response(f"Wrong token `{authentication_token}`", status=401, mimetype='application/json')
 
         insert_type = request_data.insert_type
-        data: Book = request_data.data
+        data: Union[Book, None] = request_data.data
 
         image_data = None
         if 'image' in request.files:
@@ -63,7 +63,7 @@ def update():
         return Response(f"{insert_type} updated successfully", status=201, mimetype='application/json')
     except Exception as e:
         desc = (f"Error: Updating route: {str(e)}, insert_type: {insert_type}, type(insert_type): {type(insert_type)}, "
-                f"data: {data.model_dump()}")
+                f"data: {data.model_dump() if data else ''}")
         print(desc)
         return Response(desc, status=500, mimetype='application/json')
 
