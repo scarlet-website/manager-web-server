@@ -1,6 +1,5 @@
 import json
 import os
-from datetime import datetime
 from typing import List
 
 import requests
@@ -95,8 +94,8 @@ class ManagerAPI:
             filter_data = {product_id_key: data[product_id_key]}
             return self.db_utils.delete_data_by_filter(table_name=table_name, filter_data=filter_data)
         except UnknownInsertType as e:
-            # FIXME - handle error
-            pass
+            print(f"Error (manager_api) deleting data, insert_type: {insert_type}, data: {data}, except: {str(e)}")
+            raise e
 
     def get_books(self, parse_info: bool = None):
         self.set_db_utils_connection_if_needed()
@@ -141,11 +140,20 @@ class ManagerAPI:
             self.insert_data(insert_type=InsertType.BOOK.value, data=book, image_data=image_data)
             print(f"{index + 1}/{len(books)}) Inserted book, book id: {book['CatalogNumber']}")
 
+    def exist_in_db_by_filter(self, table_name: str, data_filter) -> bool:
+        try:
+            exist = self.db_utils.exists(table_name=table_name, data_filter=data_filter)
+            return exist
+        except Exception as e:
+            print(f"Error check if exist by data filter: {str(e)}")
+            return False
+
     def add_email_to_newsletter(self, email: str):
         self.set_db_utils_connection_if_needed()
         self.content_utils.check_valid_email_address(email=email)
         newsletter_object = NewsLetter(EmailAddress=email)
-        email_exists = self.db_utils.exists(table_name=DBTable.NEWS_LETTERS.value, data_filter={"EmailAddress": email})
+        data_filter = {"EmailAddress": email}
+        email_exists = self.exist_in_db_by_filter(table_name=DBTable.NEWS_LETTERS.value, data_filter=data_filter)
         if email_exists:
             print(f"Email `{email}` already exists")
         else:
